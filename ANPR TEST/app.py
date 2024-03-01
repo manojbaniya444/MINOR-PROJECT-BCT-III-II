@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 
-from actions import add_image, add_license_image
+from actions import add_image, add_license_image, run_image_detection
 
 left_frame_color = "lightblue"
 right_frame_color = "lightgreen"
@@ -11,7 +11,17 @@ navbar_color = "lightgrey"
 
 file_path = ""
 
+# Define global variables
+down_frame = None
+right_canvas = None 
+
+# Add lists to store down canvases and labels
+down_canvases = []
+down_labels = []
+
+
 def create_ui(root):
+    global down_frame, down_canvases, down_labels, right_canvas
     # Top Frame (full width, height=50)
     top_frame = tk.Frame(root, bg=navbar_color, height=30)
     top_frame.grid(row=0, column=0, columnspan=2, sticky="nsew")
@@ -49,22 +59,27 @@ def create_ui(root):
     label1 = tk.Label(left_frame, text="Choose Image", font=("Arial", 10), bg=left_frame_color)
     btn1 = tk.Button(left_frame, text="Button 1", command=lambda: add_image(right_canvas), width=15, height=1)
 
-    label2 = tk.Label(left_frame, text="Detect", font=("Arial", 10), bg=left_frame_color)
-    btn2 = tk.Button(left_frame, text="Button 2", command=lambda: add_license_image(down_frame, down_canvases, down_labels), width=15, height=1)
+    label2 = tk.Label(left_frame, text="Add license image", font=("Arial", 10), bg=left_frame_color)
+    btn2 = tk.Button(left_frame, text="Button 2", command=lambda: add_license_image(down_canvases,down_labels,down_frame,None), width=15, height=1)
+    
+    label3 = tk.Label(left_frame, text="Run detection model", font=("Arial", 10), bg=left_frame_color)
+    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame))
 
+    # packing left frame
     label1.pack(pady=5)
     btn1.pack(pady=5)
     label2.pack(pady=5)
     btn2.pack(pady=5)
-
-    # Add lists to store down canvases and labels
-    down_canvases = []
-    down_labels = []
-
-    root.mainloop()
+    label3.pack(pady=5)
+    btn3.pack(pady=5)
+    
+    
 
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Tkinter UI with Sections")
 
     create_ui(root)
+    
+    root.mainloop()
+
