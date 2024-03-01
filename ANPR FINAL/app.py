@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 
+from yolo_detect import YOLOModel
+
 from actions import add_image, add_license_image, run_image_detection
 
 left_frame_color = "lightblue"
@@ -63,7 +65,7 @@ def create_ui(root):
     btn2 = tk.Button(left_frame, text="Button 2", command=lambda: add_license_image(down_canvases,down_labels,down_frame,None), width=15, height=1)
     
     label3 = tk.Label(left_frame, text="Run detection model", font=("Arial", 10), bg=left_frame_color)
-    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame))
+    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame,right_canvas))
 
     # packing left frame
     label1.pack(pady=5)
@@ -78,6 +80,11 @@ def create_ui(root):
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Tkinter UI with Sections")
+    
+    print("Loading YOLO model...")
+    model = YOLOModel()
+    print("YOLO model loaded successfully")
+    
 
     create_ui(root)
     
