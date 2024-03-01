@@ -2,7 +2,11 @@ import cv2
 import numpy as np
 import functools
 
-from classify import classify_character
+# from classify import classify_character
+from classify_class import ClassificationModel
+
+classification_model = ClassificationModel()  
+ 
 
 def filter_image(labels,thresh,mask,lower,upper):
     for (i, label) in enumerate(np.unique(labels)):
@@ -236,7 +240,8 @@ def segment(image_to_segment):
                 cv2.imwrite(f'./characters/character_{i}.png', erode)
                 
                 ## ? if image is eroded/grayscale it will be in (1,64,64,1) shape so we need to convert it to (1,64,64,3) for our model
-                character = classify_character(erode)
+                # character = classify_character(erode)
+                character = classification_model.classify_character(erode)
                 license_characters.append(character)
         else:
                 cropped_image = final_original_image[y :y + h , x :x + w ]
@@ -244,7 +249,8 @@ def segment(image_to_segment):
                 cropped_resized = cv2.cvtColor(cropped_resized, cv2.COLOR_RGB2BGR)
                 
                 ## ? if image is eroded/grayscale it will be in (1,64,64,1) shape so we need to convert it to (1,64,64,3) for our model
-                character = classify_character(cropped_resized)
+                # character = classify_character(cropped_resized)
+                character = classification_model.classify_character(erode)
                 license_characters.append(character)
                 
                 # get the recognized character from the classification model
@@ -258,9 +264,9 @@ def segment(image_to_segment):
     return license_characters, final_original_image
 
 
-##########?_____________Testing the function________________________________________________     
+##########?_____________Testing the function________________________________________________  
+
 image = cv2.imread("./images/test.jpg")
 license_characters, final_segmented_image = segment(image)
-
 cv2.imwrite("./characters/segmented_image.jpg", final_segmented_image)
 print(license_characters)

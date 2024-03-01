@@ -3,6 +3,9 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 
 from yolo_detect import YOLOModel
+from classify_class import ClassificationModel
+
+from segment import segment
 
 from actions import add_image, add_license_image, run_image_detection
 
@@ -84,6 +87,11 @@ if __name__ == "__main__":
     print("Loading YOLO model...")
     model = YOLOModel()
     print("YOLO model loaded successfully")
+    
+    print("Loading classification model...")
+    classification_model = ClassificationModel()
+    print("Classification model loaded successfully")
+
     
 
     create_ui(root)
