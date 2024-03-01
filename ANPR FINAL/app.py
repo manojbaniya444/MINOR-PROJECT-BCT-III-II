@@ -61,17 +61,17 @@ def create_ui(root):
     label1 = tk.Label(left_frame, text="Choose Image", font=("Arial", 10), bg=left_frame_color)
     btn1 = tk.Button(left_frame, text="Button 1", command=lambda: add_image(right_canvas), width=15, height=1)
 
-    label2 = tk.Label(left_frame, text="Add license image", font=("Arial", 10), bg=left_frame_color)
-    btn2 = tk.Button(left_frame, text="Button 2", command=lambda: add_license_image(down_canvases,down_labels,down_frame,None), width=15, height=1)
+    # label2 = tk.Label(left_frame, text="Add license image", font=("Arial", 10), bg=left_frame_color)
+    # btn2 = tk.Button(left_frame, text="Button 2", command=lambda: add_license_image(down_canvases,down_labels,down_frame,None), width=15, height=1)
     
     label3 = tk.Label(left_frame, text="Run detection model", font=("Arial", 10), bg=left_frame_color)
-    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame,right_canvas))
+    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame,right_canvas), width=15)
 
     # packing left frame
     label1.pack(pady=5)
     btn1.pack(pady=5)
-    label2.pack(pady=5)
-    btn2.pack(pady=5)
+    # label2.pack(pady=5)
+    # btn2.pack(pady=5)
     label3.pack(pady=5)
     btn3.pack(pady=5)
     

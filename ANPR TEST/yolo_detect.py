@@ -13,5 +13,7 @@ class YOLOModel:
 
     def predict(self, image):
         # Perform YOLO inference here using self.model
-        results = self.model(image,conf=0.6)  # Replace 'image' with the actual input image
+        results = self.model(image,conf=0.5)  # Replace 'image' with the actual input image
         return results
+    
+    
