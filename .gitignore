@@ -2,3 +2,4 @@
 *.png
 *.jpg
 *.jpeg
+/trained_models
