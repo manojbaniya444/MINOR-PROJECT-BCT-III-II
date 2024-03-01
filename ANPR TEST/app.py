@@ -4,15 +4,12 @@ from PIL import Image, ImageTk
 
 from yolo_detect import YOLOModel
 from classify_class import ClassificationModel
-
-from segment import segment
-
 from actions import add_image, add_license_image, run_image_detection
 
-left_frame_color = "lightblue"
-right_frame_color = "lightgreen"
-down_frame_color = "lightcoral"
-navbar_color = "lightgrey"
+left_frame_color = "#1e1e1e"
+right_frame_color = "#d0d0d0"
+down_frame_color = "#8f8f8f"
+navbar_color = "black"
 
 file_path = ""
 
@@ -51,24 +48,24 @@ def create_ui(root):
     root.grid_columnconfigure(1, weight=5)  # 5/6 of the total width
     
     # Add canvas to the right frame
-    right_canvas = tk.Canvas(right_frame, bg="white", width=640, height=640)
+    right_canvas = tk.Canvas(right_frame, bg="#d0d0d0", width=640, height=640)
     right_canvas.pack(padx=10, pady=10)
 
     # Add content to top frame (navbar)
     # tk.Label(top_frame, text="Navbar", bg=navbar_color, font=("Arial", 14)).pack(pady=10)
 
     # Add content to frames (optional)
-    tk.Label(left_frame, text="Choose option", bg=left_frame_color, font=("Arial", 17)).pack(pady=10)
+    tk.Label(left_frame, text="Choose option", fg="white",bg=left_frame_color,font=("Arial", 17)).pack(pady=10)
 
     # Add buttons to the left frame
-    label1 = tk.Label(left_frame, text="Choose Image", font=("Arial", 10), bg=left_frame_color)
-    btn1 = tk.Button(left_frame, text="Button 1", command=lambda: add_image(right_canvas), width=15, height=1)
+    label1 = tk.Label(left_frame, text="Choose Image", font=("Arial", 10), fg="white",bg=left_frame_color)
+    btn1 = tk.Button(left_frame, text="Button 1", command=lambda: add_image(right_canvas), width=20, height=1)
 
     # label2 = tk.Label(left_frame, text="Add license image", font=("Arial", 10), bg=left_frame_color)
     # btn2 = tk.Button(left_frame, text="Button 2", command=lambda: add_license_image(down_canvases,down_labels,down_frame,None), width=15, height=1)
     
-    label3 = tk.Label(left_frame, text="Run detection model", font=("Arial", 10), bg=left_frame_color)
-    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame,right_canvas), width=15)
+    label3 = tk.Label(left_frame, text="Run detection model", font=("Arial", 10), bg=left_frame_color, fg="white")
+    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame,right_canvas), width=20)
 
     # packing left frame
     label1.pack(pady=5)

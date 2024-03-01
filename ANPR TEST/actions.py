@@ -6,11 +6,12 @@ import numpy as np
 
 from yolo_detect import YOLOModel
 from utils import get_license_plate_coordinates
+from segment import segment_and_classify
 
-left_frame_color = "lightblue"
-right_frame_color = "lightgreen"
-down_frame_color = "lightcoral"
-navbar_color = "lightgrey"
+left_frame_color = "#1e1e1e"
+right_frame_color = "#d0d0d0"
+down_frame_color = "#8f8f8f"
+navbar_color = "black"
 
 # Image on the right canvas which is to be detected.
 image_to_detect = None
@@ -18,9 +19,6 @@ image_to_detect_file = ""
 
 def add_image(right_canvas, detected_image=None):
     global image_to_detect, image_to_detect_file
-    
-    
-    
     # Show the image: detected_image if provided, else the original image
     if detected_image is not None:
         # Clear the existing content on the canvas
@@ -30,7 +28,7 @@ def add_image(right_canvas, detected_image=None):
         right_canvas.create_image(0, 0, image=detected_image, anchor='nw')
         
     else:
-        image_to_detect_file = filedialog.askopenfilename(initialdir='D:\Learn Python\tkinter\Image_editing_tool\images')
+        image_to_detect_file = filedialog.askopenfilename(initialdir='D:/Projects/ANPR/ANPR%20TEST', title='Select Image to Detect', filetypes=[('Image Files', '*.jpg *.png')])
         image = Image.open(image_to_detect_file)
         width, height = 640, 640
         image = image.resize((width, height), Image.LANCZOS)
@@ -42,7 +40,7 @@ def add_image(right_canvas, detected_image=None):
         right_canvas.image_to_detect = image_to_detect
         right_canvas.create_image(0, 0, image=image_to_detect, anchor='nw')
 
-def add_license_image(down_canvases, down_labels, down_frame, detected_image=None):
+def add_license_image(down_canvases, down_labels, down_frame, detected_image=None,license_characters=""):
     # Create a new canvas and label for each call
     if detected_image is None:
         print("No image to add to the down frame.")
@@ -50,7 +48,7 @@ def add_license_image(down_canvases, down_labels, down_frame, detected_image=Non
         label_text = f"No license plate found."
         return
     
-    if len(down_canvases) == 5:
+    if len(down_canvases) == 6:
         # Remove all canvases and labels if there are already 5
         for canvas, label in zip(down_canvases, down_labels):
             canvas.destroy()
@@ -62,13 +60,14 @@ def add_license_image(down_canvases, down_labels, down_frame, detected_image=Non
     index = len(down_canvases)
 
     # Create a label for the new canvas
-    label_text = f"CanvasDown {index + 1}"
-    canvas_label = tk.Label(down_frame, text=label_text, font=("Arial", 10), bg=down_frame_color)
-    canvas_label.grid(row=0, column=index, padx=10, pady=5)
+
+    label_text = license_characters
+    canvas_label = tk.Label(down_frame, text=label_text, font=("Arial", 17), bg=down_frame_color)
+    canvas_label.grid(row=0, column=index, padx=5, pady=3)
 
     # Create a new canvas and store it in the list
-    canvas = tk.Canvas(down_frame, bg="white", width=200, height=70)
-    canvas.grid(row=1, column=index, padx=5, pady=5)
+    canvas = tk.Canvas(down_frame, bg="white", width=150, height=60)
+    canvas.grid(row=1, column=index, padx=5, pady=3)
     down_canvases.append(canvas)
     down_labels.append(canvas_label)
 
@@ -117,12 +116,21 @@ def run_image_detection(down_canvases, down_labels, down_frame, right_canvas):
                     cv2.imwrite(f'license.jpg', cropped_license_plate)
                     
                     cropped_license_plate_RGB = cv2.cvtColor(cropped_license_plate, cv2.COLOR_BGR2RGB)
-                    resized_cropped_license_plate = cv2.resize(cropped_license_plate_RGB, (200, 70))
+                    cv2.imwrite(f'license_rgb.jpg', cropped_license_plate)
+                    
+                    #get character from License plate
+                    license_characters = ""
+                    characters_list,segmented_image = segment_and_classify(cropped_license_plate)
+                    if len(characters_list) > 0:
+                        license_characters = "".join(str(char) for char in characters_list)
+                    
+                    resized_cropped_license_plate = cv2.resize(cropped_license_plate_RGB, (150,60))
                 
                     # pass the cropped license plate to add_license_image
                     license_plate = Image.fromarray(resized_cropped_license_plate)
                     license_plate = ImageTk.PhotoImage(image=license_plate)
-                    add_license_image(down_canvases, down_labels, down_frame, license_plate)
+                    print(license_characters)
+                    add_license_image(down_canvases, down_labels, down_frame, license_plate,license_characters)
                 else:
                     print("No license plate found.")
             print("Detection completed.")

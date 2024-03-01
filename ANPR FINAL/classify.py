@@ -54,6 +54,8 @@ def preprocess_image(original_image):
 #####________________________Extracting the characters____________________
 
 def classify_character(image):
+    
+    ## ?Shape of our image should be 64x64 and 3 channelss 1 batch
     image = cv2.resize(image, (TARGET_WIDTH, TARGET_HEIGHT))
 
     image = image.astype("float") / 255.0
@@ -62,8 +64,9 @@ def classify_character(image):
     
     
     ## ? if image is eroded/grayscale
+    
+    ## ? if image is eroded/grayscale it will be in (1,64,64,1) shape so we need to convert it to (1,64,64,3) for our model
     black_and_white = np.concatenate((image, image, image), axis=-1)
-    # print(image.shape)
     
     # predicting
     prob = model(black_and_white, training=False)[0]

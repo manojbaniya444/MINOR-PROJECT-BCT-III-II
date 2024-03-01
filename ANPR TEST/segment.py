@@ -7,7 +7,6 @@ from classify_class import ClassificationModel
 
 classification_model = ClassificationModel()  
  
-
 def filter_image(labels,thresh,mask,lower,upper):
     for (i, label) in enumerate(np.unique(labels)):
         # label 0 vaneko background ho
@@ -38,8 +37,15 @@ def filter_image(labels,thresh,mask,lower,upper):
         
         # filtering small squares boxes
         if width < 50 or height < 50:
-            if abs(width - height) < 10:
+            if abs(width - height) < 7:
                 continue
+            
+        if topX == 0 or topY == 0:
+            continue
+        
+        if bottomY > 199 or bottomX > 599:
+            continue
+
 
         # more filtering
         if width > 20 and height > 20:
@@ -83,7 +89,7 @@ def multi_color_masking(hsv_image):
     # For black colors in HSV  hue at maximum range (0 to 180), and saturation at maximum range (0 to 255) can play with the value 0 to 30 or 50 for black
     # if the image has very light black color then increase the value to 100 or less than 120
     lower_black = np.array([0, 0, 0])
-    upper_black = np.array([180, 70, 70]) # black ko 70 - 90 raakhne # 70 maa alik madhuro kaalo chinxa tara background black noise pani tipxa kun kun maa
+    upper_black = np.array([180, 90, 90]) # black ko 70 - 90 raakhne # 70 maa alik madhuro kaalo chinxa tara background black noise pani tipxa kun kun maa
 
     # Create a mask for black color
     black_mask = cv2.inRange(hsv_image, lower_black, upper_black)
@@ -92,7 +98,7 @@ def multi_color_masking(hsv_image):
     
     return multi_color_mask,red_mask,black_mask
     
-def segment(image_to_segment):
+def segment_and_classify(image_to_segment):
     license_characters = []
     # resize to our desired size
     image = cv2.resize(image_to_segment, (600,200))
@@ -185,14 +191,14 @@ def segment(image_to_segment):
     
     ##____________contours of characters_________________________
     contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    boundingBoxes = [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 600 and cv2.contourArea(c) < 15000]
+    boundingBoxes = [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 800 and cv2.contourArea(c) < 15000]
 
     # filtering with aspect ratio
     boundingBoxes = [bbox for bbox in boundingBoxes if bbox[2] / bbox[3] <= 3.5 and bbox[3] / bbox[2] <= 4]
     
     ## *sorting the bounding boxes
     def compare(rect1, rect2):
-        if abs(rect1[1] - rect2[1]) > 30:
+        if abs(rect1[1] - rect2[1]) > 50:
             return rect1[1] - rect2[1]
         else:
             return rect1[0] - rect2[0]
@@ -260,13 +266,14 @@ def segment(image_to_segment):
         x, y, w, h = bbox
         final_original_image = cv2.cvtColor(final_original_image, cv2.COLOR_RGB2BGR)
         cv2.rectangle(final_original_image, (x, y), (x+w, y+h), (0, 255, 0), 1)
+        cv2.imwrite("segmented_image.jpg", final_original_image)
 
     return license_characters, final_original_image
 
 
 ##########?_____________Testing the function________________________________________________  
 
-image = cv2.imread("./images/test.jpg")
-license_characters, final_segmented_image = segment(image)
-cv2.imwrite("./characters/segmented_image.jpg", final_segmented_image)
-print(license_characters)
+# image = cv2.imread("./images/test.jpg")
+# license_characters, final_segmented_image = segment_and_classify(image)
+# cv2.imwrite("./characters/segmented_image.jpg", final_segmented_image)
+# print(license_characters)
