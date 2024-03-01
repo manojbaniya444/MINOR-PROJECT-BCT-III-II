@@ -21,59 +21,120 @@ right_canvas = None
 down_canvases = []
 down_labels = []
 
+#####_______________FUNCTIONS_________________#####
+#? Adding new frame
+def add_frame(container, frames, frame_func, frame_name):
+    frame = frame_func(container)
+    frames[frame_name] = frame
+    # Configure row and column weights to make the frame expandable
+    container.grid_rowconfigure(0, weight=1)
+    container.grid_columnconfigure(0, weight=1)
+    # Use grid to make the frame take full width and height
+    frame.grid(row=0, column=0, sticky="nsew")
 
-def create_ui(root):
-    global down_frame, down_canvases, down_labels, right_canvas
-    # Top Frame (full width, height=50)
-    top_frame = tk.Frame(root, bg=navbar_color, height=30)
-    top_frame.grid(row=0, column=0, columnspan=2, sticky="nsew")
-
-    # Left Frame (1/6 width)
-    left_frame = tk.Frame(root, bg=left_frame_color)
-    left_frame.grid(row=1, column=0, sticky="nsew")
-
-    # Right Frame (5/6 width)
-    right_frame = tk.Frame(root, bg=right_frame_color)
-    right_frame.grid(row=1, column=1, sticky="nsew")
-
-    # Down Frame (1/5 of the total height)
-    down_frame = tk.Frame(root, bg=down_frame_color, height=90)
-    down_frame.grid(row=2, column=0, columnspan=2, sticky="nsew")
-
-    # Configure row and column weights for resizing
-    root.grid_rowconfigure(0, weight=1)  # 1/8 of the total height
-    root.grid_rowconfigure(1, weight=5)  # 5/8 of the total height
-    root.grid_rowconfigure(2, weight=2)  # 2/8 of the total height
-    root.grid_columnconfigure(0, weight=1)  # 1/6 of the total width
-    root.grid_columnconfigure(1, weight=5)  # 5/6 of the total width
+#? Showing the required frame
+def show_frame(frames, frame_name):
+    frame = frames[frame_name]
+    frame.tkraise()
     
+#? Detect from image frame
+def ObjectDetectionPage(parent):
+    global down_frame, down_canvases, down_labels, right_canvas
+    
+    root = tk.Frame(parent, bg='blue')
+    root.grid_rowconfigure(0, weight=1)
+    root.grid_columnconfigure(0, weight=1)
+
+    # Left Frame
+    left_frame = tk.Frame(root, bg=left_frame_color)
+    left_frame.grid(row=0, column=0, sticky="nsew")
+
+    # Right Frame
+    right_frame = tk.Frame(root, bg=right_frame_color)
+    right_frame.grid(row=0, column=1, sticky="nsew")
+    
+    # Configure row and column weights for resizing
+    root.grid_columnconfigure(0, weight=2)
+    root.grid_columnconfigure(1, weight=7)
+    
+    ## * In the right frame
+    # Down Frame
+    down_frame = tk.Frame(right_frame, bg=down_frame_color,height=90,)
+    down_frame.pack(side="bottom", fill="x")
+
     # Add canvas to the right frame
     right_canvas = tk.Canvas(right_frame, bg="#d0d0d0", width=640, height=640)
-    right_canvas.pack(padx=10, pady=10)
+    right_canvas.pack(padx=15, pady=10, side="left")
+    
+    right_right_frame = tk.Frame(right_frame, bg="green",width=400)
+    right_right_frame.pack(side="right", fill="y")
+    
+    
+    #_________comtents of left frame____________________#
 
-    # Add content to top frame (navbar)
-    # tk.Label(top_frame, text="Navbar", bg=navbar_color, font=("Arial", 14)).pack(pady=10)
-
-    # Add content to frames (optional)
-    tk.Label(left_frame, text="Choose option", fg="white",bg=left_frame_color,font=("Arial", 17)).pack(pady=10)
+    # Add content to left frame
+    tk.Label(left_frame, text="Choose option", fg="white", bg=left_frame_color, font=("Arial", 17)).pack(pady=10)
 
     # Add buttons to the left frame
-    label1 = tk.Label(left_frame, text="Choose Image", font=("Arial", 10), fg="white",bg=left_frame_color)
+    label1 = tk.Label(left_frame, text="Choose Image", font=("Arial", 10), fg="white", bg=left_frame_color)
     btn1 = tk.Button(left_frame, text="Button 1", command=lambda: add_image(right_canvas), width=20, height=1)
-
-    # label2 = tk.Label(left_frame, text="Add license image", font=("Arial", 10), bg=left_frame_color)
-    # btn2 = tk.Button(left_frame, text="Button 2", command=lambda: add_license_image(down_canvases,down_labels,down_frame,None), width=15, height=1)
     
     label3 = tk.Label(left_frame, text="Run detection model", font=("Arial", 10), bg=left_frame_color, fg="white")
-    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame,right_canvas), width=20)
+    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame, right_canvas), width=20)
 
-    # packing left frame
+    # Pack widgets in left frame
     label1.pack(pady=5)
     btn1.pack(pady=5)
-    # label2.pack(pady=5)
-    # btn2.pack(pady=5)
     label3.pack(pady=5)
     btn3.pack(pady=5)
+    
+    return root
+
+
+#? Detect from video frame
+def VideoObjectDetectionPage(parent):
+    frame = tk.Frame(parent, bg="blue")
+    # Add widgets and functionality for video object detection page
+    # You can call detect_objects(image) here
+    return frame
+    
+    
+#########_________________________________________#########
+
+
+def create_ui(root):    
+     #?NAVBAR______ Top Frame (full width, height=50)
+    top_frame = tk.Frame(root, bg=navbar_color, height=30)
+    top_frame.pack(fill="x")
+    
+    # Create navigation buttons
+    btn_object_detection = tk.Button(top_frame, text="Object Detection", command=lambda: show_frame(frames, "ObjectDetectionPage"),bg='black',fg='white')
+    btn_object_detection.pack(side="left", padx=5, pady=5)
+    btn_video_detection = tk.Button(top_frame, text="Video Detection", command=lambda: show_frame(frames, "VideoObjectDetectionPage"),bg='black', fg='white')
+    btn_video_detection.pack(side="left", padx=5, pady=5)
+    
+    ##______________________NAVAR END AREA______________________#####
+    #######_______________________ROUTING______________________##########
+    ##? container frame
+    container = tk.Frame(root)
+    container.pack(fill="both", expand=True)
+    
+    ##? Dictionary to hold different frames
+    frames = {}
+    
+    ##? Initialize and add frames to the container
+    add_frame(container, frames, ObjectDetectionPage, "ObjectDetectionPage")
+    add_frame(container, frames, VideoObjectDetectionPage, "VideoObjectDetectionPage")
+    
+    
+    #####_______________________ROUTING END_______________________#####
+    
+   
+    
+    ## ? Show the first frame
+    show_frame(frames, "ObjectDetectionPage")
+
+    
     
     
 
