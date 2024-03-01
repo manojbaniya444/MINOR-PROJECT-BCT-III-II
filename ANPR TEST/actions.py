@@ -137,3 +137,39 @@ def run_image_detection(down_canvases, down_labels, down_frame, right_canvas):
                        
     else:
         print("Please select an image first to detect.")
+
+#####_________________________________FOR THE VIDEO DETECTION PAGE ACTIONS___________________________#########
+def stop_video(live_canvas):
+    global stop_flag
+    cap.release()
+    live_canvas.delete("all")
+
+def play_video(live_canvas):
+    global stop_flag
+    ret, frame = cap.read()
+    if ret and not stop_flag:
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.resize(frame, (300,300))
+        frame = Image.fromarray(frame)
+        frame = ImageTk.PhotoImage(image=frame)
+
+        # Clear previous frame if it exists
+        live_canvas.delete("all")
+
+        # Display the new frame on the canvas
+        live_canvas.create_image(0, 0, anchor=tk.NW, image=frame)
+        live_canvas.image = frame
+
+        # Schedule the next frame
+        if not stop_flag:
+            live_canvas.after(10, lambda: play_video(live_canvas))
+
+def add_video(live_canvas):
+    global cap, stop_flag
+    stop_flag = False
+    file_path = filedialog.askopenfilename()
+    cap = cv2.VideoCapture(file_path)
+    play_video(live_canvas)
+
+def start_detection(rtsp_address, show_detected_frame):
+    pass  # Your detection logic goes here

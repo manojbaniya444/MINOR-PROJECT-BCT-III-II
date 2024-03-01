@@ -137,3 +137,5 @@ def run_image_detection(down_canvases, down_labels, down_frame, right_canvas):
                        
     else:
         print("Please select an image first to detect.")
+
+

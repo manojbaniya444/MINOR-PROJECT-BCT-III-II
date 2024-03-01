@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 
 from yolo_detect import YOLOModel
 from classify_class import ClassificationModel
-from actions import add_image, add_license_image, run_image_detection
+from actions import add_image, add_license_image, run_image_detection, start_detection,add_video,stop_video
 
 left_frame_color = "#1e1e1e"
 right_frame_color = "#d0d0d0"
@@ -93,10 +93,54 @@ def ObjectDetectionPage(parent):
 
 #? Detect from video frame
 def VideoObjectDetectionPage(parent):
-    frame = tk.Frame(parent, bg="blue")
-    # Add widgets and functionality for video object detection page
-    # You can call detect_objects(image) here
-    return frame
+    root = tk.Frame(parent, bg="blue")
+    
+    ##?__________________LAYOUT SETUP___________________##
+    
+    root.grid_rowconfigure(0, weight=1)
+    root.grid_rowconfigure(1, weight=6)
+    root.grid_rowconfigure(2, weight=4)
+    
+    root.grid_columnconfigure(0, weight=3)
+    root.grid_columnconfigure(1, weight=7)
+    
+    option_frame = tk.Frame(root, bg="green")
+    option_frame.grid(row=0,columnspan=2,sticky="nsew")
+    
+    live_frame = tk.Frame(root, bg ="yellow")
+    live_frame.grid(row=1,column=0,sticky="nsew")
+    
+    live_canvas = tk.Canvas(live_frame, bg="yellow", width=300, height=300)
+    # live_canvas.pack(fill="both", expand=True) 
+
+    show_detected_frame = tk.Frame(root, bg="orange")
+    show_detected_frame.grid(row=2,column=0,sticky="nsew")
+    
+    captured_frame = tk.Frame(root, bg="purple")
+    captured_frame.grid(row=1,column=1,sticky="nsew")
+    
+    table_frame = tk.Frame(root, bg="pink")
+    table_frame.grid(row=2,column=1,sticky="nsew")
+    
+    ##?_________________________ADDING ITEMS TO THE FRAMES_______________________##
+    
+    #? Option Frame
+    video_choose_btn = tk.Button(option_frame, text="Choose Video", command=lambda: add_video(live_canvas), bg="black", fg="white")
+    video_choose_btn.pack(padx=10,side="left")
+ 
+    entry_label = tk.Label(option_frame, text="RTSP address:", bg="green")
+    entry_label.pack(padx=10,side="left")
+    # Add entry widget to the option frame
+    entry_widget = tk.Entry(option_frame,width=60, bg="white")
+    entry_widget.pack(padx=10,side='left')
+    
+    start_detection_btn = tk.Button(option_frame, text="Start Detection", command=lambda: start_detection(entry_widget.get(), show_detected_frame), bg="black", fg="white")
+    start_detection_btn.pack(padx=5,side='left')
+    
+    stop_frame_btn = tk.Button(option_frame, text="Stop Detection", command=lambda :stop_video(live_canvas), bg="black", fg="white")
+    stop_frame_btn.pack(padx=5,side='left')
+    
+    return root
     
     
 #########_________________________________________#########
@@ -132,7 +176,7 @@ def create_ui(root):
    
     
     ## ? Show the first frame
-    show_frame(frames, "ObjectDetectionPage")
+    show_frame(frames, "VideoObjectDetectionPage")
 
     
     
@@ -143,11 +187,11 @@ if __name__ == "__main__":
     root.title("Tkinter UI with Sections")
     
     print("Loading YOLO model...")
-    model = YOLOModel()
+    # model = YOLOModel()
     print("YOLO model loaded successfully")
     
     print("Loading classification model...")
-    classification_model = ClassificationModel()
+    # classification_model = ClassificationModel()
     print("Classification model loaded successfully")
 
     

@@ -28,7 +28,7 @@ class ClassificationModel:
         if not cls._instance:
             cls._instance = super(ClassificationModel, cls).__new__(cls)
             # loading the model
-            cls._instance.model = tf.saved_model.load(MODEL_PATH)
+            # cls._instance.model = tf.saved_model.load(MODEL_PATH)
 
         return cls._instance
 
