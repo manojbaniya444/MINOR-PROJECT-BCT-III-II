@@ -7,6 +7,7 @@ from tkinter import messagebox
 import threading
 
 from yolo_detect import YOLOModel
+from yolo_predict import YOLOPredict
 from utils import get_license_plate_coordinates
 from segment import segment_and_classify
 
@@ -25,12 +26,12 @@ live_cap = None
 
 START_VIDEO = False
 
-model = YOLOModel()
+model = YOLOPredict()
 names = model.model.names
 
+model2 = YOLOModel()
+
 captured_ids = set()
-
-
 
 def add_image(right_canvas, detected_image=None):
     global image_to_detect, image_to_detect_file
@@ -96,7 +97,7 @@ def add_license_image(down_canvases, down_labels, down_frame, detected_image=Non
     canvas.create_image(0, 0, image=detected_image, anchor='nw')
 
 def run_image_detection(down_canvases, down_labels, down_frame, right_canvas):
-    model = YOLOModel()
+    model = YOLOPredict()
     if image_to_detect is not None:
         print("Running detection on the image.")
         
@@ -154,7 +155,7 @@ def run_image_detection(down_canvases, down_labels, down_frame, right_canvas):
         print("Please select an image first to detect.")
 
 #####_________________________________FOR THE VIDEO DETECTION PAGE ACTIONS___________________________#########
-def stop_video(live_canvas,license_canvas,detected_canvas):
+def stop_video(live_canvas,license_canvas,detected_canvas,license_label):
     global stop_flag
     
     # stop_flag = True
@@ -164,6 +165,7 @@ def stop_video(live_canvas,license_canvas,detected_canvas):
         live_canvas.delete("all")
         license_canvas.delete("all")
         detected_canvas.delete("all")
+        license_label.config(text="")
     if live_cap is not None:
         live_cap.release()
         stop_flag = True
@@ -183,7 +185,7 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
             print("Start capturing")
             frame_cpy = frame.copy()
             to_model_resized = cv2.resize(frame, (640, 640))
-            results = model.track(to_model_resized)
+            results = model2.track(to_model_resized)
         
             # Check if tracking IDs are available
             if hasattr(results[0].boxes, 'id') and results[0].boxes.id is not None:
@@ -210,6 +212,7 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                         
                         ##? Update the UI with detected license plate Image and Cropped Frame
                         display_licenseplate_frame(cropped_frame, frame_cpy,captured_frame,show_detected_frame,license_canvas, detected_canvas)
+                        displate_detected_characters("No detection",license_label)
                         
                         ##? Display this license plate with detected number below in the show_detected_frame
                         license_characters = ""
@@ -220,6 +223,8 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
 
                             ##? Update the UI with detected license plate Image
                             displate_detected_characters(license_characters,license_label)
+                        else:
+                            displate_detected_characters("No detection",license_label)
                         
                 ##? Show the original frame to the canvas
                 frame = cv2.cvtColor(frame_cpy, cv2.COLOR_BGR2RGB)

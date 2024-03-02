@@ -246,8 +246,8 @@ def segment_and_classify(image_to_segment):
                 cv2.imwrite(f'./characters/character_{i}.png', erode)
                 
                 ## ? if image is eroded/grayscale it will be in (1,64,64,1) shape so we need to convert it to (1,64,64,3) for our model
-                # character = classify_character(erode)
-                character = classification_model.classify_character(erode)
+                # character = classification_model.classify_character(cropped_resized)  #* Option1
+                character = classification_model.classify_character(erode) #* Option2
                 license_characters.append(character)
         else:
                 cropped_image = final_original_image[y :y + h , x :x + w ]

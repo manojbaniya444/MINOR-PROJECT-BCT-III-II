@@ -48,7 +48,7 @@ class ClassificationModel:
         ## ? if image is eroded/grayscale
     
         ## ? if image is eroded/grayscale it will be in (1,64,64,1) shape so we need to convert it to (1,64,64,3) for our model
-        black_and_white = np.concatenate((image, image, image), axis=-1)
+        black_and_white = np.concatenate((image, image, image), axis=-1)  #*For option2 this step is necessary
     
         # predicting
         prob = model(black_and_white, training=False)[0]
@@ -58,6 +58,6 @@ class ClassificationModel:
             idx = np.argmax(prob)
             predicted_label = labels[idx]
         else:
-            predicted_label = " "
+            predicted_label = "*"
 
         return predicted_label

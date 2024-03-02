@@ -3,6 +3,7 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 
 from yolo_detect import YOLOModel
+from yolo_predict import YOLOPredict 
 from classify_class import ClassificationModel
 from actions import add_image, add_license_image, run_image_detection, start_detection,add_video,stop_video,add_live_video
 
@@ -124,7 +125,7 @@ def VideoObjectDetectionPage(parent):
     captured_frame = tk.Frame(root, bg="purple")
     captured_frame.grid(row=1,column=1,sticky="nsew")
     
-    license_label = tk.Label(show_detected_frame, text="No Detection", bg="orange")
+    license_label = tk.Label(show_detected_frame, bg="orange")
     license_label.place(x=0,y=0)
     
     license_canvas = tk.Canvas(show_detected_frame, bg="white", width=150, height=60)
@@ -152,7 +153,7 @@ def VideoObjectDetectionPage(parent):
     show_live_btn = tk.Button(option_frame, text="Show Live", command=lambda: add_live_video(entry_widget.get(),live_canvas), bg="black", fg="white")
     show_live_btn.pack(padx=10,side="left")
     
-    stop_frame_btn = tk.Button(option_frame, text="Stop", command=lambda :stop_video(live_canvas,license_canvas,detected_canvas), bg="black", fg="white")
+    stop_frame_btn = tk.Button(option_frame, text="Stop", command=lambda :stop_video(live_canvas,license_canvas,detected_canvas,license_label), bg="black", fg="white")
     stop_frame_btn.pack(padx=5,side='left')
     
     start_detection_btn = tk.Button(option_frame, text="Start Detection", command=lambda: start_detection(live_canvas,captured_frame,show_detected_frame,license_canvas,detected_canvas,license_label), bg="black", fg="white")
@@ -198,6 +199,7 @@ if __name__ == "__main__":
     
     print("Loading YOLO model...")
     model = YOLOModel()
+    modelpredict = YOLOPredict()
     print("YOLO model loaded successfully")
     
     print("Loading classification model...")
