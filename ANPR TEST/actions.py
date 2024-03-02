@@ -199,7 +199,8 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                 boxes = results[0].boxes.xyxy.cpu().numpy().astype(int)
                 ids = results[0].boxes.id.cpu().numpy().astype(int)
                 classes = results[0].boxes.cls.tolist()
-                confs = results[0].boxes.conf.float().cpu().tolist()            
+                confs = results[0].boxes.conf.float().cpu().tolist()
+                annoted_frame = results[0].plot()            
                 print(ids)
 
                 # Draw boxes and IDs on the frame
@@ -209,7 +210,7 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                     cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
                     
                     # capture the frame once when its center is at the right of the frame
-                    if cy < 200 and id not in captured_ids and class_name == "license_plate" and conf > 0.6:
+                    if cy > 450 and id not in captured_ids and class_name == "license_plate" and conf > 0.6:
                         captured_ids.add(id)
 
                         ##? This cropped frame is the cropped license plate image                       
@@ -218,7 +219,7 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                         # cv2.imshow(f"license{id}", cropped_frame)
                         
                         ##? Update the UI with detected license plate Image and Cropped Frame
-                        display_licenseplate_frame(cropped_frame, frame_cpy,captured_frame,show_detected_frame,license_canvas, detected_canvas)
+                        display_licenseplate_frame(cropped_frame, annoted_frame,captured_frame,show_detected_frame,license_canvas, detected_canvas)
                         displate_detected_characters("No detection",license_label)
                         
                         ##? Display this license plate with detected number below in the show_detected_frame
@@ -239,6 +240,7 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                             displate_detected_characters("No detection",license_label)
                         
                 ##? Show the original frame to the canvas
+                frame_cpy = cv2.rectangle(to_model_resized, (20,400),(550,600),(37,245,99),2)
                 frame = cv2.cvtColor(frame_cpy, cv2.COLOR_BGR2RGB)
                 frame = cv2.resize(frame, (350,350))
                 frame = Image.fromarray(frame)
@@ -341,7 +343,7 @@ def start_detection(live_canvas,show_detected_frame,captured_frame,license_canva
 
 def display_licenseplate_frame(license_plate, full_image, captured_frame, show_detected_frame,license_canvas, detected_canvas):
     # Resize the images
-    license_plate = cv2.resize(license_plate, (150, 60))
+    license_plate = cv2.resize(license_plate, (250, 100))
     full_image = cv2.resize(full_image, (350, 350))
 
     # Convert the images to RGB format
@@ -372,4 +374,4 @@ def display_licenseplate_frame(license_plate, full_image, captured_frame, show_d
 
 
 def displate_detected_characters(license_characters,license_label):
-    license_label.config(text=license_characters, font=("Arial", 17))
+    license_label.config(text=license_characters, font=("Arial", 25))

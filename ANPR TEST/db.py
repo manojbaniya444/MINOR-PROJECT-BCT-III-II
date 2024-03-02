@@ -47,7 +47,7 @@ def insert_license_plate(plate_number, image):
 def fetch_latest_records():
     conn = sqlite3.connect('lpr.db')
     c = conn.cursor()
-    c.execute("SELECT plate_number, capture_date, vehicle_type FROM license_plates ORDER BY id DESC LIMIT 10")
+    c.execute("SELECT plate_number, capture_date, vehicle_type FROM license_plates ORDER BY id DESC LIMIT 15")
     records = c.fetchall()
     conn.close()
     return records

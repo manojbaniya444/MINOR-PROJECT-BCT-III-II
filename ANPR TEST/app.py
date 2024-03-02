@@ -14,6 +14,7 @@ right_frame_color = "#d0d0d0"
 down_frame_color = "#8f8f8f"
 navbar_color = "black"
 
+
 file_path = ""
 
 # Define global variables
@@ -89,17 +90,15 @@ def ObjectDetectionPage(parent):
 
     # Configure Treeview style
     tree_style = ttk.Style()
-    tree_style.configure("Custom.Treeview", background="#f0f0f0", foreground="black", font=("Arial", 12))
-    tree_style.configure("Custom.Treeview.Heading", background="#d0d0d0", foreground="black", font=("Arial", 14, "bold"))
-    tree_style.map("Custom.Treeview", background=[("selected", "#0078d7")])  # Change selected row color
-    tree_style.configure("Custom.Treeview.Item", background="white")
+    tree_style.configure("Custom.Treeview", background="white", foreground="white", font=("Arial", 12))
+    tree_style.configure("Custom.Treeview.Heading", background="#eeeeee", foreground="black", font=("Arial", 14))
 
     # Apply alternate colors to rows
-    tree.tag_configure("row", background="#d0d0d0")
-    tree.tag_configure("spacer", background="#f0f0f0")  # Apply spacer row style
+    tree.tag_configure("row", background="#005b96")  # Apply row style
+    tree.tag_configure("spacer", background="white")  # Apply spacer row style
 
     # Pack Treeview widget
-    tree.pack(expand=True, fill=tk.BOTH, pady=20,padx=5)
+    tree.pack(expand=True, fill=tk.BOTH, pady=20, padx=5)
     
     
     #_________comtents of left frame____________________#
@@ -109,10 +108,10 @@ def ObjectDetectionPage(parent):
 
     # Add buttons to the left frame
     label1 = tk.Label(left_frame, text="Choose Image", font=("Arial", 10), fg="white", bg=left_frame_color)
-    btn1 = tk.Button(left_frame, text="Button 1", command=lambda: add_image(right_canvas), width=15, height=1)
+    btn1 = tk.Button(left_frame, text="Import Image", command=lambda: add_image(right_canvas), width=15, height=1)
     
-    label3 = tk.Label(left_frame, text="Run detection model", font=("Arial", 10), bg=left_frame_color, fg="white")
-    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame, right_canvas,tree), width=15)
+    label3 = tk.Label(left_frame, text="Detect and Classify", font=("Arial", 10), bg=left_frame_color, fg="white")
+    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame, right_canvas,tree), width=15,bg="#005b96",fg="white")
 
     # Pack widgets in left frame
     label1.pack(pady=5)
@@ -125,7 +124,7 @@ def ObjectDetectionPage(parent):
 
 #? Detect from video frame
 def VideoObjectDetectionPage(parent):
-    root = tk.Frame(parent, bg="blue")
+    root = tk.Frame(parent, bg="#005b96")
     
     ##?__________________LAYOUT SETUP___________________##
     
@@ -137,7 +136,7 @@ def VideoObjectDetectionPage(parent):
     root.grid_columnconfigure(1, weight=7)
     
     ##? for choosing video and showing live video
-    option_frame = tk.Frame(root, bg="#f6f6f6",height=90)
+    option_frame = tk.Frame(root, bg="gray",height=90)
     option_frame.grid(row=0,columnspan=2,sticky="nsew")
     
     ##? For displaying live video
@@ -157,13 +156,13 @@ def VideoObjectDetectionPage(parent):
     captured_frame.grid(row=1,column=1,sticky="nsew")
     
     license_label = tk.Label(show_detected_frame, bg="#ffffff")
-    license_label.place(x=50,y=10)
+    license_label.place(x=70,y=10)
     
-    license_canvas = tk.Canvas(show_detected_frame, bg="#ffffff", width=150, height=60)
+    license_canvas = tk.Canvas(show_detected_frame, bg="#ffffff", width=250, height=100)
     license_canvas.place(x=50,y=90)
     
     detected_canvas = tk.Canvas(captured_frame, bg="#e1e1e1", width=350, height=350)
-    detected_canvas.place(x=0,y=0)
+    detected_canvas.place(x=200,y=20)
     
     ##? for database stored value
     table_frame = tk.Frame(root, bg="#ffffff")
@@ -180,39 +179,31 @@ def VideoObjectDetectionPage(parent):
     tree.heading("License Number", text="License Number")
     tree.heading("Date", text="Date")
     tree.heading("Vehicle Type", text="Vehicle Type")
-
-    # Configure Treeview style
-    tree_style = ttk.Style()
-    tree_style.configure("Custom.Treeview", background="#f0f0f0", foreground="black", font=("Arial", 12))
-    tree_style.configure("Custom.Treeview.Heading", background="#d0d0d0", foreground="black", font=("Arial", 14, "bold"))
-    tree_style.map("Custom.Treeview", background=[("selected", "#0078d7")])  # Change selected row color
-    tree_style.configure("Custom.Treeview.Item", background="white")
-
+    
     # Apply alternate colors to rows
-    tree.tag_configure("row", background="#d0d0d0")
-    tree.tag_configure("spacer", background="#f0f0f0")  # Apply spacer row style
+    tree.tag_configure("row", background="#005b96")  # Apply row style
 
     # Pack Treeview widget
     tree.place(x=0, y=0, relwidth=1, relheight=1)
     ##?_________________________ADDING ITEMS TO THE FRAMES_______________________##
     
     #? Option Frame
-    video_choose_btn = tk.Button(option_frame, text="Choose Video", command=lambda: add_video(live_canvas), bg="black", fg="white")
+    video_choose_btn = tk.Button(option_frame, text="Choose Video", command=lambda: add_video(live_canvas), bg="gray", fg="white")
     video_choose_btn.pack(padx=10,side="left")
  
-    entry_label = tk.Label(option_frame, text="RTSP address:", bg="green")
+    entry_label = tk.Label(option_frame, text="RTSP address:", bg="gray")
     entry_label.pack(padx=10,side="left")
     # Add entry widget to the option frame
     entry_widget = tk.Entry(option_frame,width=60, bg="white")
     entry_widget.pack(padx=10,side='left')
     
-    show_live_btn = tk.Button(option_frame, text="Show Live", command=lambda: add_live_video(entry_widget.get(),live_canvas), bg="black", fg="white")
+    show_live_btn = tk.Button(option_frame, text="Show Live", command=lambda: add_live_video(entry_widget.get(),live_canvas), bg="gray", fg="white")
     show_live_btn.pack(padx=10,side="left")
     
-    stop_frame_btn = tk.Button(option_frame, text="Stop", command=lambda :stop_video(live_canvas,license_canvas,detected_canvas,license_label), bg="black", fg="white")
+    stop_frame_btn = tk.Button(option_frame, text="Stop", command=lambda :stop_video(live_canvas,license_canvas,detected_canvas,license_label), bg="#ff0000", fg="white")
     stop_frame_btn.pack(padx=5,side='left')
     
-    start_detection_btn = tk.Button(option_frame, text="Start Detection", command=lambda: start_detection(live_canvas,captured_frame,show_detected_frame,license_canvas,detected_canvas,license_label,tree), bg="black", fg="white")
+    start_detection_btn = tk.Button(option_frame, text="Start Detection", command=lambda: start_detection(live_canvas,captured_frame,show_detected_frame,license_canvas,detected_canvas,license_label,tree), bg="#005b96", fg="white")
     start_detection_btn.pack(padx=5,side='left')
     
     ##?_______________________TABLE FRAME_____________________
@@ -255,7 +246,7 @@ def create_ui(root):
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.title("Tkinter UI with Sections")
+    root.title("License Plate Recognition System")
     
     print("Loading YOLO model...")
     model = YOLOModel()
