@@ -4,12 +4,13 @@ from PIL import Image, ImageTk
 import cv2
 import numpy as np
 from tkinter import messagebox
-import threading
 
 from yolo_detect import YOLOModel
 from yolo_predict import YOLOPredict
-from utils import get_license_plate_coordinates
+from utils import get_license_plate_coordinates, update_records
 from segment import segment_and_classify
+
+from db import insert_license_plate,fetch_latest_records
 
 left_frame_color = "#1e1e1e"
 right_frame_color = "#d0d0d0"
@@ -32,6 +33,7 @@ names = model.model.names
 model2 = YOLOModel()
 
 captured_ids = set()
+
 
 def add_image(right_canvas, detected_image=None):
     global image_to_detect, image_to_detect_file
@@ -96,7 +98,7 @@ def add_license_image(down_canvases, down_labels, down_frame, detected_image=Non
     canvas.image = detected_image
     canvas.create_image(0, 0, image=detected_image, anchor='nw')
 
-def run_image_detection(down_canvases, down_labels, down_frame, right_canvas):
+def run_image_detection(down_canvases, down_labels, down_frame, right_canvas,tree):
     model = YOLOPredict()
     if image_to_detect is not None:
         print("Running detection on the image.")
@@ -139,6 +141,9 @@ def run_image_detection(down_canvases, down_labels, down_frame, right_canvas):
                     characters_list,segmented_image = segment_and_classify(cropped_license_plate)
                     if len(characters_list) > 0:
                         license_characters = "".join(str(char) for char in characters_list)
+                        ##? saving the information in the database
+                        insert_license_plate(license_characters, cropped_license_plate)
+                        update_records(tree)
                     
                     resized_cropped_license_plate = cv2.resize(cropped_license_plate_RGB, (150,60))
                 
@@ -147,6 +152,8 @@ def run_image_detection(down_canvases, down_labels, down_frame, right_canvas):
                     license_plate = ImageTk.PhotoImage(image=license_plate)
                     print(license_characters)
                     add_license_image(down_canvases, down_labels, down_frame, license_plate,license_characters)
+                    
+                    
                 else:
                     print("No license plate found.")
             print("Detection completed.")
@@ -172,7 +179,7 @@ def stop_video(live_canvas,license_canvas,detected_canvas,license_label):
         live_canvas.delete("all")
         print("Stream stopped")
 
-def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, detected_canvas,license_label):
+def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, detected_canvas,license_label,tree):
     global stop_flag,START_VIDEO
     print("Inthe play video function")
     
@@ -192,7 +199,8 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                 boxes = results[0].boxes.xyxy.cpu().numpy().astype(int)
                 ids = results[0].boxes.id.cpu().numpy().astype(int)
                 classes = results[0].boxes.cls.tolist()
-                confs = results[0].boxes.conf.float().cpu().tolist()            
+                confs = results[0].boxes.conf.float().cpu().tolist()
+                annoted_frame = results[0].plot()            
                 print(ids)
 
                 # Draw boxes and IDs on the frame
@@ -202,7 +210,7 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                     cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
                     
                     # capture the frame once when its center is at the right of the frame
-                    if cy < 200 and id not in captured_ids and class_name == "license_plate" and conf > 0.6:
+                    if cy > 450 and id not in captured_ids and class_name == "license_plate" and conf > 0.6:
                         captured_ids.add(id)
 
                         ##? This cropped frame is the cropped license plate image                       
@@ -211,7 +219,7 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                         # cv2.imshow(f"license{id}", cropped_frame)
                         
                         ##? Update the UI with detected license plate Image and Cropped Frame
-                        display_licenseplate_frame(cropped_frame, frame_cpy,captured_frame,show_detected_frame,license_canvas, detected_canvas)
+                        display_licenseplate_frame(cropped_frame, annoted_frame,captured_frame,show_detected_frame,license_canvas, detected_canvas)
                         displate_detected_characters("No detection",license_label)
                         
                         ##? Display this license plate with detected number below in the show_detected_frame
@@ -223,10 +231,16 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
 
                             ##? Update the UI with detected license plate Image
                             displate_detected_characters(license_characters,license_label)
+                            insert_license_plate(license_characters, cropped_frame)
+                            
+                            
+                            ##TODO: update the data in tree for the video frame
+                            update_records(tree)
                         else:
                             displate_detected_characters("No detection",license_label)
                         
                 ##? Show the original frame to the canvas
+                frame_cpy = cv2.rectangle(to_model_resized, (20,400),(550,600),(37,245,99),2)
                 frame = cv2.cvtColor(frame_cpy, cv2.COLOR_BGR2RGB)
                 frame = cv2.resize(frame, (350,350))
                 frame = Image.fromarray(frame)
@@ -242,7 +256,7 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                 print("Tracking IDs not available.")
             # Schedule the next frame
             if not stop_flag:
-                live_canvas.after(10, lambda: play_video(live_canvas,show_detected_frame,captured_frame,license_canvas,detected_canvas,license_label))
+                live_canvas.after(10, lambda: play_video(live_canvas,show_detected_frame,captured_frame,license_canvas,detected_canvas,license_label,tree))
     else:
         print("Stream stopped.....")
         cap.release()
@@ -320,16 +334,16 @@ def play_live_video(live_canvas, cap):
 
 
 ## *show_detected_frame and captured_frame naming eta uta vko chaa
-def start_detection(live_canvas,show_detected_frame,captured_frame,license_canvas, detected_canvas,license_label):
+def start_detection(live_canvas,show_detected_frame,captured_frame,license_canvas, detected_canvas,license_label,tree):
     global START_VIDEO
     START_VIDEO = True
     print("Trying to detect")
-    play_video(live_canvas,show_detected_frame,captured_frame,license_canvas,detected_canvas,license_label)
+    play_video(live_canvas,show_detected_frame,captured_frame,license_canvas,detected_canvas,license_label,tree)
 
 
 def display_licenseplate_frame(license_plate, full_image, captured_frame, show_detected_frame,license_canvas, detected_canvas):
     # Resize the images
-    license_plate = cv2.resize(license_plate, (150, 60))
+    license_plate = cv2.resize(license_plate, (250, 100))
     full_image = cv2.resize(full_image, (350, 350))
 
     # Convert the images to RGB format
@@ -360,4 +374,4 @@ def display_licenseplate_frame(license_plate, full_image, captured_frame, show_d
 
 
 def displate_detected_characters(license_characters,license_label):
-    license_label.config(text=license_characters)
+    license_label.config(text=license_characters, font=("Arial", 25))

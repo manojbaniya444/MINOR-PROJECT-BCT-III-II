@@ -187,7 +187,8 @@ def segment_and_classify(image_to_segment):
     
     ###____________Clean the image______________________________
     mask = filter_image(labels,thresh,mask,lower,upper)
-    cv2.imwrite("cleanimage.jpg", mask)
+    #TODO:
+    # cv2.imwrite("cleanimage.jpg", mask)
     
     ##____________contours of characters_________________________
     contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -243,7 +244,8 @@ def segment_and_classify(image_to_segment):
                 erode = cv2.erode(filtered_image, kernel, iterations=1)
 
                 # get the recognized character from the classification model
-                cv2.imwrite(f'./characters/character_{i}.png', erode)
+                #TODO:
+                # cv2.imwrite(f'./characters/character_{i}.png', erode)
                 
                 ## ? if image is eroded/grayscale it will be in (1,64,64,1) shape so we need to convert it to (1,64,64,3) for our model
                 # character = classification_model.classify_character(cropped_resized)  #* Option1
@@ -266,7 +268,8 @@ def segment_and_classify(image_to_segment):
         x, y, w, h = bbox
         final_original_image = cv2.cvtColor(final_original_image, cv2.COLOR_RGB2BGR)
         cv2.rectangle(final_original_image, (x, y), (x+w, y+h), (0, 255, 0), 1)
-        cv2.imwrite("segmented_image.jpg", final_original_image)
+        #TODO:
+        # cv2.imwrite("segmented_image.jpg", final_original_image)
 
     return license_characters, final_original_image
 

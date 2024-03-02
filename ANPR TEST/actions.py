@@ -34,6 +34,8 @@ model2 = YOLOModel()
 
 captured_ids = set()
 
+processing_flag = False
+
 
 def add_image(right_canvas, detected_image=None):
     global image_to_detect, image_to_detect_file
@@ -240,7 +242,7 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                             displate_detected_characters("No detection",license_label)
                         
                 ##? Show the original frame to the canvas
-                frame_cpy = cv2.rectangle(to_model_resized, (20,400),(550,600),(37,245,99),2)
+                frame_cpy = cv2.rectangle(to_model_resized, (20,400),(570,630),(37,245,99),2)
                 frame = cv2.cvtColor(frame_cpy, cv2.COLOR_BGR2RGB)
                 frame = cv2.resize(frame, (350,350))
                 frame = Image.fromarray(frame)
@@ -256,7 +258,7 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                 print("Tracking IDs not available.")
             # Schedule the next frame
             if not stop_flag:
-                live_canvas.after(10, lambda: play_video(live_canvas,show_detected_frame,captured_frame,license_canvas,detected_canvas,license_label,tree))
+                live_canvas.after(60, lambda: play_video(live_canvas,show_detected_frame,captured_frame,license_canvas,detected_canvas,license_label,tree))
     else:
         print("Stream stopped.....")
         cap.release()
@@ -375,3 +377,5 @@ def display_licenseplate_frame(license_plate, full_image, captured_frame, show_d
 
 def displate_detected_characters(license_characters,license_label):
     license_label.config(text=license_characters, font=("Arial", 25))
+
+

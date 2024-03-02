@@ -1,3 +1,5 @@
+from db import fetch_latest_records
+
 def get_license_plate_coordinates(results):
         max_confidence = 0
         best_coordinates = None
@@ -17,3 +19,12 @@ def get_license_plate_coordinates(results):
                         best_coordinates = box
 
         return best_coordinates
+    
+##? Update table
+# Fetch and insert latest records into Treeview
+def update_records(tree):
+    latest_records = fetch_latest_records()
+    tree.delete(*tree.get_children())
+    for _, record in enumerate(latest_records):  
+        tree.insert("", "end", values=record, tags=("row",))
+        tree.insert("", "end", values=("", "", ""), tags=("spacer",))
