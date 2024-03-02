@@ -372,4 +372,4 @@ def display_licenseplate_frame(license_plate, full_image, captured_frame, show_d
 
 
 def displate_detected_characters(license_characters,license_label):
-    license_label.config(text=license_characters)
+    license_label.config(text=license_characters, font=("Arial", 17))

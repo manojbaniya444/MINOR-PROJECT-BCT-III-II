@@ -137,36 +137,36 @@ def VideoObjectDetectionPage(parent):
     root.grid_columnconfigure(1, weight=7)
     
     ##? for choosing video and showing live video
-    option_frame = tk.Frame(root, bg="green",height=90)
+    option_frame = tk.Frame(root, bg="#f6f6f6",height=90)
     option_frame.grid(row=0,columnspan=2,sticky="nsew")
     
     ##? For displaying live video
-    live_frame = tk.Frame(root, bg ="yellow")
+    live_frame = tk.Frame(root, bg ="#ececec")
     live_frame.grid(row=1,column=0,sticky="nsew")
     
    
-    live_canvas = tk.Canvas(live_frame, bg="yellow", width=350, height=350)
+    live_canvas = tk.Canvas(live_frame, bg="#ececec", width=350, height=350)
     live_canvas.place(x=15,y=30) 
     
     ##? For showinfg cropped from where license plate was detected
-    show_detected_frame = tk.Frame(root, bg="orange")
+    show_detected_frame = tk.Frame(root, bg="#ffffff")
     show_detected_frame.grid(row=2,column=0,sticky="nsew")
     
     ##? for showing a cropped license plate
-    captured_frame = tk.Frame(root, bg="purple")
+    captured_frame = tk.Frame(root, bg="#e1e1e1")
     captured_frame.grid(row=1,column=1,sticky="nsew")
     
-    license_label = tk.Label(show_detected_frame, bg="orange")
-    license_label.place(x=0,y=0)
+    license_label = tk.Label(show_detected_frame, bg="#ffffff")
+    license_label.place(x=50,y=10)
     
-    license_canvas = tk.Canvas(show_detected_frame, bg="white", width=150, height=60)
-    license_canvas.place(x=0,y=70)
+    license_canvas = tk.Canvas(show_detected_frame, bg="#ffffff", width=150, height=60)
+    license_canvas.place(x=50,y=90)
     
-    detected_canvas = tk.Canvas(captured_frame, bg="white", width=350, height=350)
+    detected_canvas = tk.Canvas(captured_frame, bg="#e1e1e1", width=350, height=350)
     detected_canvas.place(x=0,y=0)
     
     ##? for database stored value
-    table_frame = tk.Frame(root, bg="pink")
+    table_frame = tk.Frame(root, bg="#ffffff")
     table_frame.grid(row=2,column=1,sticky="nsew")
     
     # Create Treeview widget
