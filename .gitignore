@@ -3,5 +3,5 @@
 *.jpg
 *.jpeg
 /trained_models
-*.py
+*.pt
 *.pb
