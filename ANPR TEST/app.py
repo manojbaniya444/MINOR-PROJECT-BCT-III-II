@@ -104,21 +104,36 @@ def VideoObjectDetectionPage(parent):
     root.grid_columnconfigure(0, weight=3)
     root.grid_columnconfigure(1, weight=7)
     
+    ##? for choosing video and showing live video
     option_frame = tk.Frame(root, bg="green",height=90)
     option_frame.grid(row=0,columnspan=2,sticky="nsew")
     
+    ##? For displaying live video
     live_frame = tk.Frame(root, bg ="yellow")
     live_frame.grid(row=1,column=0,sticky="nsew")
     
+   
     live_canvas = tk.Canvas(live_frame, bg="yellow", width=350, height=350)
     live_canvas.place(x=15,y=30) 
-
+    
+    ##? For showinfg cropped from where license plate was detected
     show_detected_frame = tk.Frame(root, bg="orange")
     show_detected_frame.grid(row=2,column=0,sticky="nsew")
     
+    ##? for showing a cropped license plate
     captured_frame = tk.Frame(root, bg="purple")
     captured_frame.grid(row=1,column=1,sticky="nsew")
     
+    license_label = tk.Label(show_detected_frame, text="No Detection", bg="orange")
+    license_label.place(x=0,y=0)
+    
+    license_canvas = tk.Canvas(show_detected_frame, bg="white", width=150, height=60)
+    license_canvas.place(x=0,y=70)
+    
+    detected_canvas = tk.Canvas(captured_frame, bg="white", width=350, height=350)
+    detected_canvas.place(x=0,y=0)
+    
+    ##? for database stored value
     table_frame = tk.Frame(root, bg="pink")
     table_frame.grid(row=2,column=1,sticky="nsew")
     
@@ -137,10 +152,10 @@ def VideoObjectDetectionPage(parent):
     show_live_btn = tk.Button(option_frame, text="Show Live", command=lambda: add_live_video(entry_widget.get(),live_canvas), bg="black", fg="white")
     show_live_btn.pack(padx=10,side="left")
     
-    stop_frame_btn = tk.Button(option_frame, text="Stop", command=lambda :stop_video(live_canvas), bg="black", fg="white")
+    stop_frame_btn = tk.Button(option_frame, text="Stop", command=lambda :stop_video(live_canvas,license_canvas,detected_canvas), bg="black", fg="white")
     stop_frame_btn.pack(padx=5,side='left')
     
-    start_detection_btn = tk.Button(option_frame, text="Start Detection", command=lambda: start_detection(show_detected_frame,live_canvas), bg="black", fg="white")
+    start_detection_btn = tk.Button(option_frame, text="Start Detection", command=lambda: start_detection(live_canvas,captured_frame,show_detected_frame,license_canvas,detected_canvas,license_label), bg="black", fg="white")
     start_detection_btn.pack(padx=5,side='left')
     
     return root

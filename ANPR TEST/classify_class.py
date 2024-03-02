@@ -54,10 +54,10 @@ class ClassificationModel:
         prob = model(black_and_white, training=False)[0]
         max_prob = np.max(prob)
         # print(max_prob)
-        if max_prob > 0.9:
+        if max_prob > 0.8:
             idx = np.argmax(prob)
             predicted_label = labels[idx]
         else:
-            predicted_label = "X"
+            predicted_label = " "
 
         return predicted_label

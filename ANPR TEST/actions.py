@@ -26,6 +26,9 @@ live_cap = None
 START_VIDEO = False
 
 model = YOLOModel()
+names = model.model.names
+
+captured_ids = set()
 
 
 
@@ -151,7 +154,7 @@ def run_image_detection(down_canvases, down_labels, down_frame, right_canvas):
         print("Please select an image first to detect.")
 
 #####_________________________________FOR THE VIDEO DETECTION PAGE ACTIONS___________________________#########
-def stop_video(live_canvas):
+def stop_video(live_canvas,license_canvas,detected_canvas):
     global stop_flag
     
     # stop_flag = True
@@ -159,13 +162,15 @@ def stop_video(live_canvas):
         cap.release()
         stop_flag = True
         live_canvas.delete("all")
+        license_canvas.delete("all")
+        detected_canvas.delete("all")
     if live_cap is not None:
         live_cap.release()
         stop_flag = True
         live_canvas.delete("all")
         print("Stream stopped")
 
-def play_video(live_canvas):
+def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, detected_canvas,license_label):
     global stop_flag,START_VIDEO
     print("Inthe play video function")
     
@@ -175,60 +180,50 @@ def play_video(live_canvas):
     if ret and not stop_flag and START_VIDEO:
         
         if True:
-            print("AFter frame skip")
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            original_frame = frame.copy()
-            
-            # detection on the frame
-            results = model.predict(frame)
-            print("Got yolo results")
-            
-            
-            # Check if any detection has confidence greater than 70 percent
-            if any(conf > 0.5 for result in results for conf in result.boxes.conf.float().cpu().tolist()):
-                # Visualize the results on the image
-                print("Confidence matches")
-                for result in results:
-                    annotated_image = result.plot()
-                    # ?Here the annotated image is in BGR format so converting it to RGB to supply to tkinter
-                    # annotated_image = cv2.cvtColor(annotated_image, cv2.COLOR_BGR2RGB)
-                    # For tkinter supporting image
-                    annotated_image = cv2.resize(annotated_image, (640, 640))
-                    img = Image.fromarray(annotated_image)
-                    img = ImageTk.PhotoImage(image=img)
+            print("Start capturing")
+            frame_cpy = frame.copy()
+            to_model_resized = cv2.resize(frame, (640, 640))
+            results = model.track(to_model_resized)
+        
+            # Check if tracking IDs are available
+            if hasattr(results[0].boxes, 'id') and results[0].boxes.id is not None:
+                boxes = results[0].boxes.xyxy.cpu().numpy().astype(int)
+                ids = results[0].boxes.id.cpu().numpy().astype(int)
+                classes = results[0].boxes.cls.tolist()
+                confs = results[0].boxes.conf.float().cpu().tolist()            
+                print(ids)
+
+                # Draw boxes and IDs on the frame
+                for box, id, cls , conf in zip(boxes, ids, classes, confs):
+                    x1, y1, x2, y2 = box
+                    class_name = names[int(cls)]
+                    cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
                     
-                    cv2.imshow("Result", annotated_image)
-                    
-                    
-                    # get license plate coordinates
-                    license_coordinates = get_license_plate_coordinates(results)
-                    
-                    if license_coordinates is not None:
-                        x1,y1,x2,y2 = license_coordinates
-                    
-                        # crop the license plate
-                        cropped_license_plate = original_frame[int(y1):int(y2), int(x1):int(x2)]
+                    # capture the frame once when its center is at the right of the frame
+                    if cy < 200 and id not in captured_ids and class_name == "license_plate" and conf > 0.6:
+                        captured_ids.add(id)
+
+                        ##? This cropped frame is the cropped license plate image                       
+                        cropped_frame = to_model_resized[y1:y2, x1:x2]
+                        print(f"License no. {id} captured.") 
+                        # cv2.imshow(f"license{id}", cropped_frame)
                         
-                        # cv2.imwrite(f'license.jpg', cropped_license_plate)
-                        cv2.imshow("License Plate", cropped_license_plate)
+                        ##? Update the UI with detected license plate Image and Cropped Frame
+                        display_licenseplate_frame(cropped_frame, frame_cpy,captured_frame,show_detected_frame,license_canvas, detected_canvas)
                         
-                        cropped_license_plate_RGB = cv2.cvtColor(cropped_license_plate, cv2.COLOR_BGR2RGB)
-                        
-                        #get character from License plate
+                        ##? Display this license plate with detected number below in the show_detected_frame
                         license_characters = ""
-                        # characters_list,segmented_image = segment_and_classify(cropped_license_plate)
-                        # if len(characters_list) > 0:
-                        #     license_characters = "".join(str(char) for char in characters_list)
+                        characters_list,segmented_image = segment_and_classify(cropped_frame)
+                        if len(characters_list) > 0:
+                            license_characters = "".join(str(char) for char in characters_list)
+                            cv2.imwrite(f'licens{license_characters}.jpg', segmented_image)
+
+                            ##? Update the UI with detected license plate Image
+                            displate_detected_characters(license_characters,license_label)
                         
-                    
-                        # pass the cropped license plate to add_license_image
-                        # print(license_characters)
-                    else:
-                        print("No license plate found.")
-                print("Detection completed.")
-            
-            
-                frame = cv2.resize(annotated_image, (350,350))
+                ##? Show the original frame to the canvas
+                frame = cv2.cvtColor(frame_cpy, cv2.COLOR_BGR2RGB)
+                frame = cv2.resize(frame, (350,350))
                 frame = Image.fromarray(frame)
                 frame = ImageTk.PhotoImage(image=frame)
 
@@ -237,13 +232,18 @@ def play_video(live_canvas):
 
                 # Display the new frame on the canvas
                 live_canvas.create_image(0, 0, anchor=tk.NW, image=frame)
-                live_canvas.image = frame
+                live_canvas.image = frame                   
             else:
-                print("No detection")
-
+                print("Tracking IDs not available.")
             # Schedule the next frame
             if not stop_flag:
-                live_canvas.after(10, lambda: play_video(live_canvas))
+                live_canvas.after(10, lambda: play_video(live_canvas,show_detected_frame,captured_frame,license_canvas,detected_canvas,license_label))
+    else:
+        print("Stream stopped.....")
+        cap.release()
+        stop_flag = True
+        live_canvas.delete("all")
+        print("Stream stopped")
 
 def add_video(live_canvas):
     global cap, stop_flag
@@ -312,39 +312,47 @@ def play_live_video(live_canvas, cap):
 
     # Start the asynchronous update
     update_canvas()
-    # def update_canvas():
-    #     if not stop_flag:
-    #         ret, frame = cap.read()  
-    #         frame_count += 1          
-    #         if ret:
-    #             if frame_count % 10 == 0:
-    #                 print("Stream started.....")
-    #                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    #                 frame = cv2.resize(frame, (350, 350))
-    #                 frame = Image.fromarray(frame)
-    #                 frame = ImageTk.PhotoImage(image=frame)
-
-    #                 # Clear previous frame if it exists
-    #                 live_canvas.delete("all")
-
-    #                 # Display the new frame on the canvas
-    #                 live_canvas.create_image(0, 0, anchor=tk.NW, image=frame)
-    #                 live_canvas.image = frame
-
-    #                 # Schedule the next frame update
-    #                 live_canvas.after(50, update_canvas)
-    #         else:
-    #             print("Stream stopped.....")
-    #             cap.release()
-
-    # Start the asynchronous update
-    # update_canvas()
 
 
-    
-
-def start_detection(show_detected_frame,live_canvas):
+## *show_detected_frame and captured_frame naming eta uta vko chaa
+def start_detection(live_canvas,show_detected_frame,captured_frame,license_canvas, detected_canvas,license_label):
     global START_VIDEO
     START_VIDEO = True
     print("Trying to detect")
-    play_video(live_canvas)
+    play_video(live_canvas,show_detected_frame,captured_frame,license_canvas,detected_canvas,license_label)
+
+
+def display_licenseplate_frame(license_plate, full_image, captured_frame, show_detected_frame,license_canvas, detected_canvas):
+    # Resize the images
+    license_plate = cv2.resize(license_plate, (150, 60))
+    full_image = cv2.resize(full_image, (350, 350))
+
+    # Convert the images to RGB format
+    license_plate = cv2.cvtColor(license_plate, cv2.COLOR_BGR2RGB)
+    full_image = cv2.cvtColor(full_image, cv2.COLOR_BGR2RGB)
+
+    # Convert the images to PIL format
+    license_plate = Image.fromarray(license_plate)
+    full_image = Image.fromarray(full_image)
+
+    # Convert the images to ImageTk format
+    license_plate = ImageTk.PhotoImage(image=license_plate)
+    full_image = ImageTk.PhotoImage(image=full_image)
+
+    ##? Create a canvas to show in the captured frame and show_detected_frame
+    
+    # destroy the previous canvas
+    license_canvas.delete("all")
+    detected_canvas.delete("all")
+    
+    # Display the new images on the canvases
+    license_canvas.create_image(0, 0, image=license_plate, anchor='nw')
+    detected_canvas.create_image(0, 0, image=full_image, anchor='nw')
+
+    # Ensure the images are stored to prevent garbage collection
+    license_canvas.image = license_plate
+    detected_canvas.image = full_image
+
+
+def displate_detected_characters(license_characters,license_label):
+    license_label.config(text=license_characters)
