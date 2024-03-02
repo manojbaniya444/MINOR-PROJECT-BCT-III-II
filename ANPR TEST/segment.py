@@ -73,11 +73,11 @@ def perspective_transform(image, pts):
     return result
 
 def multi_color_masking(hsv_image):
-    lower1 = np.array([0, 70, 70])
+    lower1 = np.array([0, 50, 50])  # 50 can be good for capturing low red also
     upper1 = np.array([10, 255, 255])
  
     # upper boundary RED color range values; Hue (160 - 180)
-    lower2 = np.array([160,70,70])
+    lower2 = np.array([160,50,50])
     upper2 = np.array([179,255,255])
 
     mask1 = cv2.inRange(hsv_image, lower1, upper1)
@@ -89,7 +89,7 @@ def multi_color_masking(hsv_image):
     # For black colors in HSV  hue at maximum range (0 to 180), and saturation at maximum range (0 to 255) can play with the value 0 to 30 or 50 for black
     # if the image has very light black color then increase the value to 100 or less than 120
     lower_black = np.array([0, 0, 0])
-    upper_black = np.array([180, 90, 90]) # black ko 70 - 90 raakhne # 70 maa alik madhuro kaalo chinxa tara background black noise pani tipxa kun kun maa
+    upper_black = np.array([180, 80, 80]) # black ko 70 - 90 raakhne # 70 maa alik madhuro kaalo chinxa tara background black noise pani tipxa kun kun maa
 
     # Create a mask for black color
     black_mask = cv2.inRange(hsv_image, lower_black, upper_black)

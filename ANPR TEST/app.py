@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 
 from yolo_detect import YOLOModel
 from classify_class import ClassificationModel
-from actions import add_image, add_license_image, run_image_detection, start_detection,add_video,stop_video
+from actions import add_image, add_license_image, run_image_detection, start_detection,add_video,stop_video,add_live_video
 
 left_frame_color = "#1e1e1e"
 right_frame_color = "#d0d0d0"
@@ -104,14 +104,14 @@ def VideoObjectDetectionPage(parent):
     root.grid_columnconfigure(0, weight=3)
     root.grid_columnconfigure(1, weight=7)
     
-    option_frame = tk.Frame(root, bg="green")
+    option_frame = tk.Frame(root, bg="green",height=90)
     option_frame.grid(row=0,columnspan=2,sticky="nsew")
     
     live_frame = tk.Frame(root, bg ="yellow")
     live_frame.grid(row=1,column=0,sticky="nsew")
     
-    live_canvas = tk.Canvas(live_frame, bg="yellow", width=300, height=300)
-    # live_canvas.pack(fill="both", expand=True) 
+    live_canvas = tk.Canvas(live_frame, bg="yellow", width=350, height=350)
+    live_canvas.place(x=15,y=30) 
 
     show_detected_frame = tk.Frame(root, bg="orange")
     show_detected_frame.grid(row=2,column=0,sticky="nsew")
@@ -134,18 +134,18 @@ def VideoObjectDetectionPage(parent):
     entry_widget = tk.Entry(option_frame,width=60, bg="white")
     entry_widget.pack(padx=10,side='left')
     
-    start_detection_btn = tk.Button(option_frame, text="Start Detection", command=lambda: start_detection(entry_widget.get(), show_detected_frame), bg="black", fg="white")
-    start_detection_btn.pack(padx=5,side='left')
+    show_live_btn = tk.Button(option_frame, text="Show Live", command=lambda: add_live_video(entry_widget.get(),live_canvas), bg="black", fg="white")
+    show_live_btn.pack(padx=10,side="left")
     
-    stop_frame_btn = tk.Button(option_frame, text="Stop Detection", command=lambda :stop_video(live_canvas), bg="black", fg="white")
+    stop_frame_btn = tk.Button(option_frame, text="Stop", command=lambda :stop_video(live_canvas), bg="black", fg="white")
     stop_frame_btn.pack(padx=5,side='left')
     
+    start_detection_btn = tk.Button(option_frame, text="Start Detection", command=lambda: start_detection(show_detected_frame,live_canvas), bg="black", fg="white")
+    start_detection_btn.pack(padx=5,side='left')
+    
     return root
-    
-    
+  
 #########_________________________________________#########
-
-
 def create_ui(root):    
      #?NAVBAR______ Top Frame (full width, height=50)
     top_frame = tk.Frame(root, bg=navbar_color, height=30)
@@ -187,11 +187,11 @@ if __name__ == "__main__":
     root.title("Tkinter UI with Sections")
     
     print("Loading YOLO model...")
-    # model = YOLOModel()
+    model = YOLOModel()
     print("YOLO model loaded successfully")
     
     print("Loading classification model...")
-    # classification_model = ClassificationModel()
+    classification_model = ClassificationModel()
     print("Classification model loaded successfully")
 
     

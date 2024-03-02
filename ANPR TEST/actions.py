@@ -3,6 +3,8 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 import cv2
 import numpy as np
+from tkinter import messagebox
+import threading
 
 from yolo_detect import YOLOModel
 from utils import get_license_plate_coordinates
@@ -16,6 +18,12 @@ navbar_color = "black"
 # Image on the right canvas which is to be detected.
 image_to_detect = None
 image_to_detect_file = ""
+frame_count = 0
+
+cap = None
+live_cap = None
+
+START_VIDEO = False
 
 def add_image(right_canvas, detected_image=None):
     global image_to_detect, image_to_detect_file
@@ -141,15 +149,25 @@ def run_image_detection(down_canvases, down_labels, down_frame, right_canvas):
 #####_________________________________FOR THE VIDEO DETECTION PAGE ACTIONS___________________________#########
 def stop_video(live_canvas):
     global stop_flag
-    cap.release()
-    live_canvas.delete("all")
+    
+    # stop_flag = True
+    if cap is not None:
+        cap.release()
+        stop_flag = True
+        live_canvas.delete("all")
+    if live_cap is not None:
+        live_cap.release()
+        stop_flag = True
+        live_canvas.delete("all")
+        print("Stream stopped")
 
 def play_video(live_canvas):
-    global stop_flag
+    global stop_flag,START_VIDEO
     ret, frame = cap.read()
-    if ret and not stop_flag:
+    if ret and not stop_flag and START_VIDEO:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = cv2.resize(frame, (300,300))
+        original_frame = frame.copy()
+        frame = cv2.resize(frame, (350,350))
         frame = Image.fromarray(frame)
         frame = ImageTk.PhotoImage(image=frame)
 
@@ -169,7 +187,130 @@ def add_video(live_canvas):
     stop_flag = False
     file_path = filedialog.askopenfilename()
     cap = cv2.VideoCapture(file_path)
-    play_video(live_canvas)
+    
+    
+    ##_________________________LIVE STREAMING___________________________##
+    
+def add_live_video(rtsp_address, live_canvas):
+    global stop_flag
+    print("Trying to connect to stream...")
 
-def start_detection(rtsp_address, show_detected_frame):
-    pass  # Your detection logic goes here
+    if rtsp_address == "" or len(rtsp_address) < 30:
+        messagebox.showwarning(title='No RTSP PROVIDED', message='Please provide the RTSP address')
+        return
+    else:
+        messagebox.showinfo(title='RTSP PROVIDED', message='RTSP address provided')
+        handle_video_capture(rtsp_address, live_canvas)
+
+def handle_video_capture(rtsp_address, live_canvas):
+    global stop_flag, live_cap,frame_count
+    stop_flag = False
+
+    try:
+        print("Opening video from RTSP...")
+        live_cap = cv2.VideoCapture(rtsp_address)
+        
+        if not live_cap.isOpened():
+            raise RuntimeError("Failed to open RTSP stream")
+
+        print("Trying to open the stream...")
+        
+        play_live_video(live_canvas, live_cap)
+
+    except Exception as e:
+        print("Error:", e)
+        messagebox.showerror(title="Error", message="Failed to open the RTSP stream")
+        
+def play_live_video(live_canvas, cap):
+    # Define the function for updating the canvas asynchronously
+    global stop_flag
+    def update_canvas():
+        if not stop_flag:
+            ret, frame = cap.read()  
+            if ret:
+                    # print("Stream started.....")
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    frame = cv2.resize(frame, (350, 350))
+                    frame = Image.fromarray(frame)
+                    frame = ImageTk.PhotoImage(image=frame)
+
+                    # Clear previous frame if it exists
+                    live_canvas.delete("all")
+
+                    # Display the new frame on the canvas
+                    live_canvas.create_image(0, 0, anchor=tk.NW, image=frame)
+                    live_canvas.image = frame
+
+                    # Schedule the next frame update
+                    live_canvas.after(100, update_canvas)
+            else:
+                print("Stream stopped.....")
+                cap.release()
+
+    # Start the asynchronous update
+    update_canvas()
+    # def update_canvas():
+    #     if not stop_flag:
+    #         ret, frame = cap.read()  
+    #         frame_count += 1          
+    #         if ret:
+    #             if frame_count % 10 == 0:
+    #                 print("Stream started.....")
+    #                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    #                 frame = cv2.resize(frame, (350, 350))
+    #                 frame = Image.fromarray(frame)
+    #                 frame = ImageTk.PhotoImage(image=frame)
+
+    #                 # Clear previous frame if it exists
+    #                 live_canvas.delete("all")
+
+    #                 # Display the new frame on the canvas
+    #                 live_canvas.create_image(0, 0, anchor=tk.NW, image=frame)
+    #                 live_canvas.image = frame
+
+    #                 # Schedule the next frame update
+    #                 live_canvas.after(50, update_canvas)
+    #         else:
+    #             print("Stream stopped.....")
+    #             cap.release()
+
+    # Start the asynchronous update
+    # update_canvas()
+
+
+# def play_live_video(live_canvas, cap):
+#     global stop_flag
+#     update_canvas_flag = True  # Flag to control canvas updates
+#     while not stop_flag:
+#         ret, frame = cap.read()
+#         if ret:
+#             print("Stream started.....")
+#             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+#             frame = cv2.resize(frame, (350, 350))
+#             frame = Image.fromarray(frame)
+#             frame = ImageTk.PhotoImage(image=frame)
+
+#             # Clear previous frame if it exists
+#             live_canvas.delete("all")
+
+#             # Display the new frame on the canvas
+#             live_canvas.create_image(0, 0, anchor=tk.NW, image=frame)
+#             live_canvas.image = frame
+
+#             # Update the flag to trigger canvas update
+#             update_canvas_flag = True
+#         else:
+#             print("Stream stopped.....")
+#             cap.release()
+
+#         # Schedule the next frame update if necessary
+#         if update_canvas_flag and not stop_flag:
+#             live_canvas.after(100, lambda: play_live_video(live_canvas, cap))
+#             update_canvas_flag = False  # Reset the flag after scheduling update
+
+    
+
+def start_detection(show_detected_frame,live_canvas):
+    global START_VIDEO
+    START_VIDEO = True
+    play_video(live_canvas)

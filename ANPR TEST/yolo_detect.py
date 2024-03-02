@@ -7,7 +7,7 @@ class YOLOModel:
         if not cls._instance:
             cls._instance = super(YOLOModel, cls).__new__(cls)
             # Load the YOLO model here
-            # cls._instance.model = YOLO('./trained_models/best.pt')  
+            cls._instance.model = YOLO('./trained_models/best.pt')  
 
         return cls._instance
 
