@@ -1,11 +1,13 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 from PIL import Image, ImageTk
 
 from yolo_detect import YOLOModel
 from yolo_predict import YOLOPredict 
 from classify_class import ClassificationModel
 from actions import add_image, add_license_image, run_image_detection, start_detection,add_video,stop_video,add_live_video
+
+from db import create_database, fetch_latest_records
 
 left_frame_color = "#1e1e1e"
 right_frame_color = "#d0d0d0"
@@ -60,15 +62,44 @@ def ObjectDetectionPage(parent):
     
     ## * In the right frame
     # Down Frame
-    down_frame = tk.Frame(right_frame, bg=down_frame_color,height=90,)
+    down_frame = tk.Frame(right_frame, bg=down_frame_color, height=90)
     down_frame.pack(side="bottom", fill="x")
 
     # Add canvas to the right frame
     right_canvas = tk.Canvas(right_frame, bg="#d0d0d0", width=640, height=640)
     right_canvas.pack(padx=15, pady=10, side="left")
-    
-    right_right_frame = tk.Frame(right_frame, bg="green",width=400)
-    right_right_frame.pack(side="right", fill="y")
+
+
+    ##? To show the detected items from the database
+
+    # right_right_frame = tk.Frame(right_frame, bg="green",width=400)
+    # right_right_frame.pack(side="right", fill="y")
+
+    # Create Treeview widget
+    tree = ttk.Treeview(right_frame, style="Custom.Treeview")
+    tree["columns"] = ("Plate Number", "Capture Date", "Vehicle Type")
+    tree.column("#0", width=0, stretch=tk.NO)  # To hide the first empty column
+    tree.column("Plate Number", anchor=tk.W, width=100)
+    tree.column("Capture Date", anchor=tk.W, width=100)
+    tree.column("Vehicle Type", anchor=tk.W, width=100)
+
+    tree.heading("Plate Number", text="Plate Number")
+    tree.heading("Capture Date", text="Capture Date")
+    tree.heading("Vehicle Type", text="Vehicle Type")
+
+    # Configure Treeview style
+    tree_style = ttk.Style()
+    tree_style.configure("Custom.Treeview", background="#f0f0f0", foreground="black", font=("Arial", 12))
+    tree_style.configure("Custom.Treeview.Heading", background="#d0d0d0", foreground="black", font=("Arial", 14, "bold"))
+    tree_style.map("Custom.Treeview", background=[("selected", "#0078d7")])  # Change selected row color
+    tree_style.configure("Custom.Treeview.Item", background="white")
+
+    # Apply alternate colors to rows
+    tree.tag_configure("row", background="#d0d0d0")
+    tree.tag_configure("spacer", background="#f0f0f0")  # Apply spacer row style
+
+    # Pack Treeview widget
+    tree.pack(expand=True, fill=tk.BOTH, pady=20,padx=5)
     
     
     #_________comtents of left frame____________________#
@@ -78,10 +109,10 @@ def ObjectDetectionPage(parent):
 
     # Add buttons to the left frame
     label1 = tk.Label(left_frame, text="Choose Image", font=("Arial", 10), fg="white", bg=left_frame_color)
-    btn1 = tk.Button(left_frame, text="Button 1", command=lambda: add_image(right_canvas), width=20, height=1)
+    btn1 = tk.Button(left_frame, text="Button 1", command=lambda: add_image(right_canvas), width=15, height=1)
     
     label3 = tk.Label(left_frame, text="Run detection model", font=("Arial", 10), bg=left_frame_color, fg="white")
-    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame, right_canvas), width=20)
+    btn3 = tk.Button(left_frame, text="Detect", command=lambda: run_image_detection(down_canvases, down_labels, down_frame, right_canvas,tree), width=15)
 
     # Pack widgets in left frame
     label1.pack(pady=5)
@@ -138,6 +169,31 @@ def VideoObjectDetectionPage(parent):
     table_frame = tk.Frame(root, bg="pink")
     table_frame.grid(row=2,column=1,sticky="nsew")
     
+    # Create Treeview widget
+    tree = ttk.Treeview(table_frame, style="Custom.Treeview")
+    tree["columns"] = ("License Number", "Date", "Vehicle Type")
+    tree.column("#0", width=0, stretch=tk.NO)  # To hide the first empty column
+    tree.column("License Number", anchor=tk.W, width=100)
+    tree.column("Date", anchor=tk.W, width=100)
+    tree.column("Vehicle Type", anchor=tk.W, width=100)
+
+    tree.heading("License Number", text="License Number")
+    tree.heading("Date", text="Date")
+    tree.heading("Vehicle Type", text="Vehicle Type")
+
+    # Configure Treeview style
+    tree_style = ttk.Style()
+    tree_style.configure("Custom.Treeview", background="#f0f0f0", foreground="black", font=("Arial", 12))
+    tree_style.configure("Custom.Treeview.Heading", background="#d0d0d0", foreground="black", font=("Arial", 14, "bold"))
+    tree_style.map("Custom.Treeview", background=[("selected", "#0078d7")])  # Change selected row color
+    tree_style.configure("Custom.Treeview.Item", background="white")
+
+    # Apply alternate colors to rows
+    tree.tag_configure("row", background="#d0d0d0")
+    tree.tag_configure("spacer", background="#f0f0f0")  # Apply spacer row style
+
+    # Pack Treeview widget
+    tree.place(x=0, y=0, relwidth=1, relheight=1)
     ##?_________________________ADDING ITEMS TO THE FRAMES_______________________##
     
     #? Option Frame
@@ -156,8 +212,12 @@ def VideoObjectDetectionPage(parent):
     stop_frame_btn = tk.Button(option_frame, text="Stop", command=lambda :stop_video(live_canvas,license_canvas,detected_canvas,license_label), bg="black", fg="white")
     stop_frame_btn.pack(padx=5,side='left')
     
-    start_detection_btn = tk.Button(option_frame, text="Start Detection", command=lambda: start_detection(live_canvas,captured_frame,show_detected_frame,license_canvas,detected_canvas,license_label), bg="black", fg="white")
+    start_detection_btn = tk.Button(option_frame, text="Start Detection", command=lambda: start_detection(live_canvas,captured_frame,show_detected_frame,license_canvas,detected_canvas,license_label,tree), bg="black", fg="white")
     start_detection_btn.pack(padx=5,side='left')
+    
+    ##?_______________________TABLE FRAME_____________________
+    # Create Treeview widget
+    
     
     return root
   
@@ -209,6 +269,8 @@ if __name__ == "__main__":
     
 
     create_ui(root)
+    
+    create_database()
     
     root.mainloop()
 
