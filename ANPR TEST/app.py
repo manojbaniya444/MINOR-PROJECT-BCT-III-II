@@ -172,15 +172,10 @@ def create_ui(root):
     
     
     #####_______________________ROUTING END_______________________#####
-    
-   
-    
+
     ## ? Show the first frame
     show_frame(frames, "VideoObjectDetectionPage")
 
-    
-    
-    
 
 if __name__ == "__main__":
     root = tk.Tk()

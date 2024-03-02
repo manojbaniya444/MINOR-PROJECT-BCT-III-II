@@ -25,6 +25,10 @@ live_cap = None
 
 START_VIDEO = False
 
+model = YOLOModel()
+
+
+
 def add_image(right_canvas, detected_image=None):
     global image_to_detect, image_to_detect_file
     # Show the image: detected_image if provided, else the original image
@@ -163,24 +167,83 @@ def stop_video(live_canvas):
 
 def play_video(live_canvas):
     global stop_flag,START_VIDEO
+    print("Inthe play video function")
+    
     ret, frame = cap.read()
+    # frame_count += 1
+    print("Cap read")
     if ret and not stop_flag and START_VIDEO:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        original_frame = frame.copy()
-        frame = cv2.resize(frame, (350,350))
-        frame = Image.fromarray(frame)
-        frame = ImageTk.PhotoImage(image=frame)
+        
+        if True:
+            print("AFter frame skip")
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            original_frame = frame.copy()
+            
+            # detection on the frame
+            results = model.predict(frame)
+            print("Got yolo results")
+            
+            
+            # Check if any detection has confidence greater than 70 percent
+            if any(conf > 0.5 for result in results for conf in result.boxes.conf.float().cpu().tolist()):
+                # Visualize the results on the image
+                print("Confidence matches")
+                for result in results:
+                    annotated_image = result.plot()
+                    # ?Here the annotated image is in BGR format so converting it to RGB to supply to tkinter
+                    # annotated_image = cv2.cvtColor(annotated_image, cv2.COLOR_BGR2RGB)
+                    # For tkinter supporting image
+                    annotated_image = cv2.resize(annotated_image, (640, 640))
+                    img = Image.fromarray(annotated_image)
+                    img = ImageTk.PhotoImage(image=img)
+                    
+                    cv2.imshow("Result", annotated_image)
+                    
+                    
+                    # get license plate coordinates
+                    license_coordinates = get_license_plate_coordinates(results)
+                    
+                    if license_coordinates is not None:
+                        x1,y1,x2,y2 = license_coordinates
+                    
+                        # crop the license plate
+                        cropped_license_plate = original_frame[int(y1):int(y2), int(x1):int(x2)]
+                        
+                        # cv2.imwrite(f'license.jpg', cropped_license_plate)
+                        cv2.imshow("License Plate", cropped_license_plate)
+                        
+                        cropped_license_plate_RGB = cv2.cvtColor(cropped_license_plate, cv2.COLOR_BGR2RGB)
+                        
+                        #get character from License plate
+                        license_characters = ""
+                        # characters_list,segmented_image = segment_and_classify(cropped_license_plate)
+                        # if len(characters_list) > 0:
+                        #     license_characters = "".join(str(char) for char in characters_list)
+                        
+                    
+                        # pass the cropped license plate to add_license_image
+                        # print(license_characters)
+                    else:
+                        print("No license plate found.")
+                print("Detection completed.")
+            
+            
+                frame = cv2.resize(annotated_image, (350,350))
+                frame = Image.fromarray(frame)
+                frame = ImageTk.PhotoImage(image=frame)
 
-        # Clear previous frame if it exists
-        live_canvas.delete("all")
+                # Clear previous frame if it exists
+                live_canvas.delete("all")
 
-        # Display the new frame on the canvas
-        live_canvas.create_image(0, 0, anchor=tk.NW, image=frame)
-        live_canvas.image = frame
+                # Display the new frame on the canvas
+                live_canvas.create_image(0, 0, anchor=tk.NW, image=frame)
+                live_canvas.image = frame
+            else:
+                print("No detection")
 
-        # Schedule the next frame
-        if not stop_flag:
-            live_canvas.after(10, lambda: play_video(live_canvas))
+            # Schedule the next frame
+            if not stop_flag:
+                live_canvas.after(10, lambda: play_video(live_canvas))
 
 def add_video(live_canvas):
     global cap, stop_flag
@@ -278,39 +341,10 @@ def play_live_video(live_canvas, cap):
     # update_canvas()
 
 
-# def play_live_video(live_canvas, cap):
-#     global stop_flag
-#     update_canvas_flag = True  # Flag to control canvas updates
-#     while not stop_flag:
-#         ret, frame = cap.read()
-#         if ret:
-#             print("Stream started.....")
-#             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-#             frame = cv2.resize(frame, (350, 350))
-#             frame = Image.fromarray(frame)
-#             frame = ImageTk.PhotoImage(image=frame)
-
-#             # Clear previous frame if it exists
-#             live_canvas.delete("all")
-
-#             # Display the new frame on the canvas
-#             live_canvas.create_image(0, 0, anchor=tk.NW, image=frame)
-#             live_canvas.image = frame
-
-#             # Update the flag to trigger canvas update
-#             update_canvas_flag = True
-#         else:
-#             print("Stream stopped.....")
-#             cap.release()
-
-#         # Schedule the next frame update if necessary
-#         if update_canvas_flag and not stop_flag:
-#             live_canvas.after(100, lambda: play_live_video(live_canvas, cap))
-#             update_canvas_flag = False  # Reset the flag after scheduling update
-
     
 
 def start_detection(show_detected_frame,live_canvas):
     global START_VIDEO
     START_VIDEO = True
+    print("Trying to detect")
     play_video(live_canvas)
