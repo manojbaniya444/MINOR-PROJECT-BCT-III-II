@@ -199,7 +199,7 @@ def segment_and_classify(image_to_segment):
     
     ## *sorting the bounding boxes
     def compare(rect1, rect2):
-        if abs(rect1[1] - rect2[1]) > 50:
+        if abs(rect1[1] - rect2[1]) > 40:
             return rect1[1] - rect2[1]
         else:
             return rect1[0] - rect2[0]

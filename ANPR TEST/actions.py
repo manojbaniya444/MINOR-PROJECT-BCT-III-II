@@ -129,7 +129,7 @@ def run_image_detection(down_canvases, down_labels, down_frame, right_canvas,tre
                 
                 if license_coordinates is not None:
                     x1,y1,x2,y2 = license_coordinates
-                
+
                     # crop the license plate
                     cropped_license_plate = img_to_yolo[int(y1):int(y2), int(x1):int(x2)]
                     
@@ -148,7 +148,7 @@ def run_image_detection(down_canvases, down_labels, down_frame, right_canvas,tre
                         update_records(tree)
                     
                     resized_cropped_license_plate = cv2.resize(cropped_license_plate_RGB, (150,60))
-                
+                    
                     # pass the cropped license plate to add_license_image
                     license_plate = Image.fromarray(resized_cropped_license_plate)
                     license_plate = ImageTk.PhotoImage(image=license_plate)
@@ -229,7 +229,8 @@ def play_video(live_canvas,show_detected_frame,captured_frame,license_canvas, de
                         characters_list,segmented_image = segment_and_classify(cropped_frame)
                         if len(characters_list) > 0:
                             license_characters = "".join(str(char) for char in characters_list)
-                            cv2.imwrite(f'licens{license_characters}.jpg', segmented_image)
+                            #TODO:
+                            # cv2.imwrite(f'licens{license_characters}.jpg', segmented_image)
 
                             ##? Update the UI with detected license plate Image
                             displate_detected_characters(license_characters,license_label)

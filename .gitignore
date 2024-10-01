@@ -5,3 +5,5 @@
 /trained_models
 *.pt
 *.pb
+__pycache__
+.txt

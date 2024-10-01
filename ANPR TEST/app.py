@@ -241,7 +241,7 @@ def create_ui(root):
     #####_______________________ROUTING END_______________________#####
 
     ## ? Show the first frame
-    show_frame(frames, "VideoObjectDetectionPage")
+    show_frame(frames, "ObjectDetectionPage")
 
 
 if __name__ == "__main__":
