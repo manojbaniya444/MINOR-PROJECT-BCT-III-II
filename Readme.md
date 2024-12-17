@@ -15,7 +15,7 @@ Inference on a single image, its prediction result and db storage.
 
 Inference on video (10fps)
 
-![demo](https://github.com/manojbaniya444/MINOR-PROJECT-BCT-III-II/blob/main/demo/video.mp4)
+https://github.com/user-attachments/assets/9da1856b-80fa-417a-8328-6e0abee5e12f
 
 ### Application workflow
 Overall application components from start to the end of the app.
